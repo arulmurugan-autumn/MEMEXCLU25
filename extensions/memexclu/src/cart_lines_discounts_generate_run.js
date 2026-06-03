@@ -96,7 +96,7 @@ export function cartLinesDiscountsGenerateRun(input) {
       {
         productDiscountsAdd: {
           candidates,
-          selectionStrategy: ProductDiscountSelectionStrategy.First,
+          selectionStrategy: ProductDiscountSelectionStrategy.All,
         },
       },
     ],
