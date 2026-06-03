@@ -13,8 +13,6 @@ import {
  * @returns {CartLinesDiscountsGenerateRunResult}
  */
 
-const DISCOUNT_MESSAGE = "MEMEXCLU25";
-
 export function cartLinesDiscountsGenerateRun(input) {
   // 1. Customer must be logged in
   const customer = input.cart.buyerIdentity?.customer;
@@ -36,7 +34,22 @@ export function cartLinesDiscountsGenerateRun(input) {
     return { operations: [] };
   }
 
-  // 4. Build candidates only for eligible lines
+
+  // 4. Get message from discount metafield (JSON)
+  const metafieldRaw = input.discount.metafield?.value;
+  let discountMessage = "";
+
+  try {
+    const parsed = JSON.parse(metafieldRaw || "{}");
+    discountMessage = parsed.discountMessage?.trim() || "";
+  } catch {
+    discountMessage = "";
+  }
+
+  if (!discountMessage) {
+    return { operations: [] };
+  }
+  // 5. Build candidates only for eligible lines
   const candidates = [];
 
   for (const line of input.cart.lines) {
@@ -47,17 +60,17 @@ export function cartLinesDiscountsGenerateRun(input) {
 
     const product = merchandise.product;
 
-    // 5. Check custom.discount metafield is non-empty
+    // 6. Check custom.discount metafield is non-empty
     const metafieldValue = product.metafield?.value;
     if (!metafieldValue || metafieldValue.trim() === "") continue;
 
-    // 6. Parse percentage value
+    // 7. Parse percentage value
     const percentage = parseFloat(metafieldValue);
     if (isNaN(percentage) || percentage <= 0) continue;
 
-    // 7. Add as a discount candidate
+    // 8. Add as a discount candidate
     candidates.push({
-      message: DISCOUNT_MESSAGE,
+      message: discountMessage,
       targets: [
         {
           cartLine: {
